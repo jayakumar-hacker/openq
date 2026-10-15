@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Confirmation')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container narrow">
+    <h1>
+        <span th:if="${confirmation.status == 'BOOKED'}">Your appointment is confirmed</span>
+        <span th:unless="${confirmation.status == 'BOOKED'}">This appointment was cancelled</span>
+    </h1>
+    <dl class="details card">
+        <dt>Appointment ID</dt><dd th:text="'#' + ${confirmation.appointmentId}">#1</dd>
+        <dt>Status</dt><dd><span class="badge" th:classappend="${confirmation.status == 'BOOKED'} ? 'ok' : 'off'" th:text="${confirmation.status}">BOOKED</span></dd>
+        <dt>Doctor</dt><dd><span th:text="${confirmation.doctorName}">Dr. Name</span> (<span th:text="${confirmation.specialization}">Spec</span>)</dd>
+        <dt>Clinic</dt><dd th:text="${confirmation.clinicName}">Clinic</dd>
+        <dt>Date</dt><dd th:text="${#temporals.format(confirmation.startTime, 'EEEE, dd MMMM yyyy')}">Date</dd>
+        <dt>Time</dt><dd><span th:text="${#temporals.format(confirmation.startTime, 'HH:mm')}">09:00</span> &ndash;
+            <span th:text="${#temporals.format(confirmation.endTime, 'HH:mm')}">09:30</span></dd>
+        <dt>Patient</dt><dd th:text="${confirmation.patientName}">Name</dd>
+        <dt>Email</dt><dd th:text="${confirmation.patientEmail}">email</dd>
+    </dl>
+    <p><a class="btn" th:href="@{/doctors}">Book another appointment</a></p>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

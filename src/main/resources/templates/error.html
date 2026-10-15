@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Error')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container narrow">
+    <h1 th:text="${#strings.isEmpty(title)} ? 'Something went wrong' : ${title}">Something went wrong</h1>
+    <p class="muted" th:if="${status != null}">Error <span th:text="${status}">500</span></p>
+    <p th:text="${#strings.isEmpty(message)} ? 'An unexpected error occurred. Please try again later.' : ${message}">Message</p>
+    <p>
+        <a class="btn" th:href="@{/doctors}">Choose a doctor</a>
+        <a th:href="@{/}">Back to home</a>
+    </p>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
