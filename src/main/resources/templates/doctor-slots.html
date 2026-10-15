@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Choose a slot')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container">
+    <p><a th:href="@{/doctors}">&larr; All doctors</a></p>
+    <h1 th:text="${doctor.name}">Dr. Name</h1>
+    <p class="muted"><span th:text="${doctor.specialization}">Specialization</span> &middot;
+        <span th:text="${doctor.clinicName}">Clinic</span></p>
+
+    <h2>Available times</h2>
+    <p th:if="${#maps.isEmpty(slotsByDay)}" class="empty">
+        There are no open slots for this doctor right now. Please check again later or
+        <a th:href="@{/doctors}">choose another doctor</a>.
+    </p>
+    <section th:each="day : ${slotsByDay}" class="day">
+        <h3 th:text="${#temporals.format(day.key, 'EEEE, dd MMMM yyyy')}">Monday, 01 January 2026</h3>
+        <ul class="slots">
+            <li th:each="slot : ${day.value}">
+                <a class="slot" th:href="@{/slots/{id}/book(id=${slot.id})}"
+                   th:attr="aria-label='Book ' + ${#temporals.format(slot.startTime, 'HH:mm')} + ' on ' + ${#temporals.format(slot.startTime, 'dd MMMM')}">
+                    <span th:text="${#temporals.format(slot.startTime, 'HH:mm')}">09:00</span>
+                    &ndash;
+                    <span th:text="${#temporals.format(slot.endTime, 'HH:mm')}">09:30</span>
+                </a>
+            </li>
+        </ul>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' · OpenQ'">OpenQ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header th:fragment="header">
+    <div class="topbar">
+        <a class="brand" th:href="@{/}">Open<span>Q</span></a>
+        <nav aria-label="Main navigation">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/doctors}">Find a doctor</a>
+            <a class="admin-link" th:href="@{/admin}">Admin (demo)</a>
+        </nav>
+    </div>
+</header>
+<footer th:fragment="footer">
+    <p>OpenQ is an educational demo. Do not enter real patient data. The "Admin" page has no login.</p>
+</footer>
+</body>
+</html>

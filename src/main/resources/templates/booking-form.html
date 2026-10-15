@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Book appointment')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container narrow">
+    <p><a th:href="@{/doctors/{id}/slots(id=${slot.doctor.id})}">&larr; Back to available times</a></p>
+    <h1>Confirm your appointment</h1>
+
+    <section class="summary card">
+        <p><strong th:text="${slot.doctor.name}">Dr. Name</strong>
+            <span class="tag" th:text="${slot.doctor.specialization}">Specialization</span></p>
+        <p th:text="${slot.doctor.clinicName}">Clinic</p>
+        <p>
+            <span th:text="${#temporals.format(slot.startTime, 'EEEE, dd MMMM yyyy')}">Date</span>,
+            <span th:text="${#temporals.format(slot.startTime, 'HH:mm')}">09:00</span>
+            &ndash;
+            <span th:text="${#temporals.format(slot.endTime, 'HH:mm')}">09:30</span>
+        </p>
+    </section>
+
+    <form th:action="@{/slots/{id}/book(id=${slot.id})}" th:object="${bookingForm}" method="post" novalidate>
+        <div class="field">
+            <label for="patientName">Full name</label>
+            <input type="text" id="patientName" th:field="*{patientName}" maxlength="100" autocomplete="name" required>
+            <p class="error" th:if="${#fields.hasErrors('patientName')}" th:errors="*{patientName}">Name error</p>
+        </div>
+        <div class="field">
+            <label for="patientEmail">Email</label>
+            <input type="email" id="patientEmail" th:field="*{patientEmail}" maxlength="160" autocomplete="email" required>
+            <p class="error" th:if="${#fields.hasErrors('patientEmail')}" th:errors="*{patientEmail}">Email error</p>
+        </div>
+        <div class="field">
+            <label for="patientPhone">Phone <span class="muted">(optional)</span></label>
+            <input type="tel" id="patientPhone" th:field="*{patientPhone}" maxlength="20" autocomplete="tel">
+            <p class="error" th:if="${#fields.hasErrors('patientPhone')}" th:errors="*{patientPhone}">Phone error</p>
+        </div>
+        <button class="btn" type="submit">Book appointment</button>
+    </form>
+    <p class="muted small">Demo only: this form has no CSRF protection because the app has no Spring Security.</p>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
