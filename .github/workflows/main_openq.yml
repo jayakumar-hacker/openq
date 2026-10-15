@@ -1,0 +1,92 @@
+# Build, test and deploy OpenQ to Azure App Service on every push to main.
+#
+# One-time setup (details in AZURE_DEPLOYMENT.md, section E):
+#   Repository secrets   : AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID   (OIDC login, no passwords stored)
+#   Repository variable  : AZURE_WEBAPP_NAME  (the name of your Web App)
+# The database settings (DB_URL, DB_USERNAME, DB_PASSWORD) live in the App Service
+# Application Settings, NOT in this file or in GitHub.
+name: Build and deploy OpenQ
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      # Throwaway PostgreSQL that exists only for this job, so the *IT integration tests run against a real database.
+      # The password below protects an ephemeral container with no data and is not a secret.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: openq
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: openq_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U openq -d openq_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (with Maven cache)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Unit tests, integration tests and package
+        env:
+          TEST_DB_URL: jdbc:postgresql://localhost:5432/openq_test
+          TEST_DB_USERNAME: openq
+          TEST_DB_PASSWORD: ci-only-password
+        run: mvn -B -ntp clean verify
+
+      - name: Upload the executable JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: openq-jar
+          path: target/openq.jar
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Required for OpenID Connect: lets the job request a short-lived token from GitHub.
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Download the JAR built by the previous job
+        uses: actions/download-artifact@v4
+        with:
+          name: openq-jar
+          path: dist
+
+      - name: Log in to Azure (OpenID Connect)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          package: dist/openq.jar
+
+      - name: Log out of Azure
+        if: always()
+        run: az logout
